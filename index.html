@@ -44,7 +44,7 @@
     <canvas id="unity-canvas" tabindex="-1"></canvas>
     <div id="loader">
       <h1>تشريح الأسماك</h1>
-      <p>جارٍ تحميل التجربة… للواقع المعزز استخدم متصفح Chrome على أندرويد، وعلى الأجهزة الأخرى تعمل التجربة بالعرض ثلاثي الأبعاد.</p>
+      <p>جارٍ تحميل التجربة…</p>
       <div id="bar"><div id="fill"></div></div>
       <div id="pct">0%</div>
       <div id="error"></div>
@@ -59,21 +59,23 @@
         </div>
         <div class="body">
           <div id="n-ios" hidden>
-            <h2>افتح التجربة على هاتف أندرويد</h2>
-            <p>تجربة الواقع المعزز تعمل عبر متصفح <b>Google Chrome</b> على هواتف أندرويد. متصفحات آيفون (Safari وChrome) لا تدعم الواقع المعزز على الويب حاليًا.</p>
+            <h2>افتح التجربة في Google Chrome</h2>
+            <p>على الآيفون تعمل التجربة عبر متصفح <b>Google Chrome</b>. حمّله مجانًا ثم افتح الرابط فيه.</p>
             <ol>
-              <li>استخدم هاتف أندرويد.</li>
-              <li>امسح الرمز وافتح الرابط في Google Chrome.</li>
-              <li>اضغط «ابدأ» ووجّه الكاميرا نحو سطح مستوٍ كالطاولة.</li>
+              <li>حمّل Google Chrome من App Store.</li>
+              <li>اضغط «فتح في Google Chrome» (أو انسخ الرابط والصقه في Chrome).</li>
+              <li>اضغط «ابدأ» واستمتع بالتجربة.</li>
             </ol>
+            <a class="btn primary" href="https://apps.apple.com/app/google-chrome/id535886823">تحميل Google Chrome</a>
+            <a class="btn secondary" id="open-chrome-ios" href="#">فتح في Google Chrome</a>
           </div>
           <div id="n-android" hidden>
             <h2>افتح الرابط في Google Chrome</h2>
-            <p>المتصفح الحالي لا يدعم الواقع المعزز. لتعمل التجربة كاملة افتحها في متصفح <b>Google Chrome</b>.</p>
+            <p>على أندرويد تعمل التجربة عبر متصفح <b>Google Chrome</b>. اضغط الزر بالأسفل لفتحها فيه.</p>
             <a class="btn primary" id="open-chrome" href="#">فتح في Google Chrome</a>
           </div>
           <button class="btn secondary" id="copy">نسخ رابط التجربة</button>
-          <button class="btn link" id="continue">المتابعة بالعرض ثلاثي الأبعاد بدون واقع معزز</button>
+          <button class="btn link" id="continue">المتابعة في هذا المتصفح</button>
         </div>
       </div>
     </div>
@@ -112,7 +114,7 @@
           }).catch(function (message) {
             var e = document.getElementById("error");
             e.style.display = "block";
-            e.textContent = "تعذر تشغيل التجربة على هذا المتصفح. افتح الرابط في Google Chrome على هاتف أندرويد. (" + message + ")";
+            e.textContent = "تعذر تشغيل التجربة على هذا المتصفح. افتح الرابط في متصفح Google Chrome. (" + message + ")";
           });
         };
         document.body.appendChild(script);
@@ -133,6 +135,8 @@
         document.getElementById("open-chrome").href = "intent://" + url.replace(/^https?:\/\//, "") +
           "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" +
           encodeURIComponent("https://play.google.com/store/apps/details?id=com.android.chrome") + ";end";
+        // على الآيفون يفتح الرابط في Chrome إن كان مثبتًا
+        document.getElementById("open-chrome-ios").href = url.replace(/^http/, "googlechrome");
         var copy = document.getElementById("copy");
         copy.onclick = function () {
           var done = function () { copy.textContent = "تم نسخ الرابط ✓"; };
@@ -157,7 +161,8 @@
         ]);
       }
 
-      if (/[?&]force=1/.test(location.search) || (!ios && !android)) startUnity();
+      // Chrome على الآيفون (CriOS) يبدأ التجربة مباشرة
+      if (/[?&]force=1/.test(location.search) || (!ios && !android) || (ios && /CriOS/.test(ua))) startUnity();
       else arSupported().then(function (ok) {
         // Chrome على أندرويد بدون دعم ARCore يعمل بالعرض ثلاثي الأبعاد مباشرة
         if (ok || chrome) startUnity(); else showNotice();

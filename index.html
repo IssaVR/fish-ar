@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#1a8f91">
+    <title>تشريح الأسماك بالواقع المعزز</title>
+    <style>
+      html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #cfe8eb; }
+      body { font-family: "Segoe UI", Tahoma, "Noto Kufi Arabic", sans-serif; color: #1f2d3d; -webkit-tap-highlight-color: transparent; }
+      #unity-canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; background: #cfe8eb; touch-action: none; }
+      #loader { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+                background: linear-gradient(#e4f3f4, #cfe8eb); padding: 24px; box-sizing: border-box; text-align: center; transition: opacity .4s; }
+      #loader h1 { font-size: 26px; margin: 0; color: #1a8f91; }
+      #loader p { font-size: 16px; margin: 0; color: #4b5b6b; line-height: 1.7; max-width: 420px; }
+      #bar { width: min(320px, 80vw); height: 12px; border-radius: 6px; background: #ffffff; overflow: hidden; box-shadow: inset 0 0 0 1px #b8d8db; }
+      #fill { height: 100%; width: 0; background: #26b3b3; border-radius: 6px; transition: width .2s; }
+      #pct { font-size: 15px; color: #1a8f91; }
+      #error { display: none; color: #b03a2e; font-size: 15px; max-width: 420px; line-height: 1.7; }
+    </style>
+  </head>
+  <body>
+    <canvas id="unity-canvas" tabindex="-1"></canvas>
+    <div id="loader">
+      <h1>تشريح الأسماك</h1>
+      <p>جارٍ تحميل التجربة… للواقع المعزز استخدم متصفح Chrome على أندرويد، وعلى الأجهزة الأخرى تعمل التجربة بالعرض ثلاثي الأبعاد.</p>
+      <div id="bar"><div id="fill"></div></div>
+      <div id="pct">0%</div>
+      <div id="error"></div>
+    </div>
+    <script>
+      var buildUrl = "Build";
+      var config = {
+        dataUrl: buildUrl + "/Web.data.unityweb",
+        frameworkUrl: buildUrl + "/Web.framework.js.unityweb",
+        codeUrl: buildUrl + "/Web.wasm.unityweb",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "تشريح الأسماك AR",
+        productVersion: "1.0.0",
+        // دقة الشاشة الحقيقية مع حد أعلى حتى يبقى الأداء جيدًا على الهواتف
+        devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+      };
+      var canvas = document.getElementById("unity-canvas");
+      var loader = document.getElementById("loader");
+      var fill = document.getElementById("fill");
+      var pct = document.getElementById("pct");
+      var script = document.createElement("script");
+      script.src = buildUrl + "/Web.loader.js";
+      script.onload = function () {
+        createUnityInstance(canvas, config, function (p) {
+          fill.style.width = (100 * p) + "%";
+          pct.textContent = Math.round(100 * p) + "%";
+        }).then(function () {
+          loader.style.opacity = "0";
+          setTimeout(function () { loader.style.display = "none"; }, 400);
+        }).catch(function (message) {
+          var e = document.getElementById("error");
+          e.style.display = "block";
+          e.textContent = "تعذر تشغيل التجربة على هذا المتصفح. جرّب Chrome أو Safari بأحدث إصدار. (" + message + ")";
+        });
+      };
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>

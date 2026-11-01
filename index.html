@@ -17,6 +17,27 @@
       #fill { height: 100%; width: 0; background: #26b3b3; border-radius: 6px; transition: width .2s; }
       #pct { font-size: 15px; color: #1a8f91; }
       #error { display: none; color: #b03a2e; font-size: 15px; max-width: 420px; line-height: 1.7; }
+
+      /* صفحة التنبيه للمتصفحات التي لا تدعم الواقع المعزز */
+      #notice { position: fixed; inset: 0; display: none; overflow-y: auto; background: linear-gradient(#e4f3f4, #cfe8eb);
+                padding: 24px 16px; box-sizing: border-box; }
+      #notice .card { max-width: 440px; margin: 0 auto; background: #fff; border-radius: 22px; overflow: hidden;
+                      box-shadow: 0 10px 30px rgba(26, 143, 145, .18); text-align: center; }
+      #notice .head { background: #1a8f91; color: #fff; padding: 22px 18px 18px; }
+      #notice .head .fish { font-size: 46px; line-height: 1; }
+      #notice .head h1 { font-size: 21px; margin: 10px 0 4px; }
+      #notice .head small { font-size: 14px; opacity: .85; }
+      #notice .body { padding: 20px 20px 24px; }
+      #notice h2 { font-size: 20px; color: #1a8f91; margin: 0 0 10px; }
+      #notice p { font-size: 15.5px; line-height: 1.8; color: #4b5b6b; margin: 0 0 14px; }
+      #notice ol { text-align: right; font-size: 15px; line-height: 1.8; color: #1f2d3d; margin: 0 0 18px; padding: 12px 34px 12px 14px;
+                   background: #eef7f8; border-radius: 14px; }
+      #notice .btn { display: block; width: 100%; box-sizing: border-box; border: 0; border-radius: 14px; padding: 14px; margin-top: 10px;
+                     font: inherit; font-size: 16.5px; font-weight: 600; text-decoration: none; cursor: pointer; }
+      #notice .primary { background: #1a8f91; color: #fff; }
+      #notice .secondary { background: #e4f3f4; color: #1a8f91; }
+      #notice .link { background: none; color: #6b7b8b; font-size: 14px; font-weight: 400; text-decoration: underline; }
+      #notice [hidden] { display: none; }
     </style>
   </head>
   <body>
@@ -28,6 +49,35 @@
       <div id="pct">0%</div>
       <div id="error"></div>
     </div>
+
+    <div id="notice">
+      <div class="card">
+        <div class="head">
+          <div class="fish">🐟</div>
+          <h1>تشريح الأسماك بالواقع المعزز</h1>
+          <small>مركز الاستزراع السمكي</small>
+        </div>
+        <div class="body">
+          <div id="n-ios" hidden>
+            <h2>افتح التجربة على هاتف أندرويد</h2>
+            <p>تجربة الواقع المعزز تعمل عبر متصفح <b>Google Chrome</b> على هواتف أندرويد. متصفحات آيفون (Safari وChrome) لا تدعم الواقع المعزز على الويب حاليًا.</p>
+            <ol>
+              <li>استخدم هاتف أندرويد.</li>
+              <li>امسح الرمز وافتح الرابط في Google Chrome.</li>
+              <li>اضغط «ابدأ» ووجّه الكاميرا نحو سطح مستوٍ كالطاولة.</li>
+            </ol>
+          </div>
+          <div id="n-android" hidden>
+            <h2>افتح الرابط في Google Chrome</h2>
+            <p>المتصفح الحالي لا يدعم الواقع المعزز. لتعمل التجربة كاملة افتحها في متصفح <b>Google Chrome</b>.</p>
+            <a class="btn primary" id="open-chrome" href="#">فتح في Google Chrome</a>
+          </div>
+          <button class="btn secondary" id="copy">نسخ رابط التجربة</button>
+          <button class="btn link" id="continue">المتابعة بالعرض ثلاثي الأبعاد بدون واقع معزز</button>
+        </div>
+      </div>
+    </div>
+
     <script>
       var buildUrl = "Build";
       var config = {
@@ -43,24 +93,75 @@
       };
       var canvas = document.getElementById("unity-canvas");
       var loader = document.getElementById("loader");
+      var notice = document.getElementById("notice");
       var fill = document.getElementById("fill");
       var pct = document.getElementById("pct");
-      var script = document.createElement("script");
-      script.src = buildUrl + "/Web.loader.js";
-      script.onload = function () {
-        createUnityInstance(canvas, config, function (p) {
-          fill.style.width = (100 * p) + "%";
-          pct.textContent = Math.round(100 * p) + "%";
-        }).then(function () {
-          loader.style.opacity = "0";
-          setTimeout(function () { loader.style.display = "none"; }, 400);
-        }).catch(function (message) {
-          var e = document.getElementById("error");
-          e.style.display = "block";
-          e.textContent = "تعذر تشغيل التجربة على هذا المتصفح. جرّب Chrome أو Safari بأحدث إصدار. (" + message + ")";
-        });
-      };
-      document.body.appendChild(script);
+
+      function startUnity() {
+        notice.style.display = "none";
+        loader.style.display = "flex";
+        var script = document.createElement("script");
+        script.src = buildUrl + "/Web.loader.js";
+        script.onload = function () {
+          createUnityInstance(canvas, config, function (p) {
+            fill.style.width = (100 * p) + "%";
+            pct.textContent = Math.round(100 * p) + "%";
+          }).then(function () {
+            loader.style.opacity = "0";
+            setTimeout(function () { loader.style.display = "none"; }, 400);
+          }).catch(function (message) {
+            var e = document.getElementById("error");
+            e.style.display = "block";
+            e.textContent = "تعذر تشغيل التجربة على هذا المتصفح. افتح الرابط في Google Chrome على هاتف أندرويد. (" + message + ")";
+          });
+        };
+        document.body.appendChild(script);
+      }
+
+      // قبل تحميل التجربة: إذا كان الهاتف لا يدعم الواقع المعزز في هذا المتصفح تظهر صفحة توضح ما يجب فعله
+      var ua = navigator.userAgent;
+      var ios = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+      var android = /Android/i.test(ua);
+      // Chrome الحقيقي على أندرويد (وليس متصفحًا داخل تطبيق أو متصفحًا آخر مبنيًا عليه)
+      var chrome = android && /Chrome\/\d+/.test(ua) &&
+        !/; wv\)|Version\/\d|EdgA|OPR|SamsungBrowser|Firefox|FBAN|FBAV|Instagram|Line\/|Snapchat|MiuiBrowser|HeyTap|UCBrowser|YaBrowser|DuckDuckGo/.test(ua);
+
+      function showNotice() {
+        loader.style.display = "none";
+        document.getElementById(ios ? "n-ios" : "n-android").hidden = false;
+        var url = location.href.split("#")[0];
+        document.getElementById("open-chrome").href = "intent://" + url.replace(/^https?:\/\//, "") +
+          "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" +
+          encodeURIComponent("https://play.google.com/store/apps/details?id=com.android.chrome") + ";end";
+        var copy = document.getElementById("copy");
+        copy.onclick = function () {
+          var done = function () { copy.textContent = "تم نسخ الرابط ✓"; };
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, fallback);
+          else fallback();
+          function fallback() {
+            var t = document.createElement("textarea");
+            t.value = url; document.body.appendChild(t); t.select();
+            try { document.execCommand("copy"); done(); } catch (e) {}
+            t.remove();
+          }
+        };
+        document.getElementById("continue").onclick = startUnity;
+        notice.style.display = "block";
+      }
+
+      function arSupported() {
+        if (!navigator.xr || !navigator.xr.isSessionSupported) return Promise.resolve(false);
+        return Promise.race([
+          navigator.xr.isSessionSupported("immersive-ar").catch(function () { return false; }),
+          new Promise(function (r) { setTimeout(function () { r(false); }, 2000); }),
+        ]);
+      }
+
+      if (/[?&]force=1/.test(location.search) || (!ios && !android)) startUnity();
+      else arSupported().then(function (ok) {
+        // Chrome على أندرويد بدون دعم ARCore يعمل بالعرض ثلاثي الأبعاد مباشرة
+        if (ok || chrome) startUnity(); else showNotice();
+      });
     </script>
   </body>
 </html>

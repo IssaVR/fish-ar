@@ -81,6 +81,17 @@
     </div>
 
     <script>
+      // متصفحات بلا WebXR (مثل الآيفون): بديل بسيط يقول إن الواقع المعزز غير متاح،
+      // حتى لا تحمّل مكتبة WebXR إضافة خارجية تُعطّل التشغيل، فتعمل التجربة بالعرض ثلاثي الأبعاد
+      if (!navigator.xr) {
+        try {
+          Object.defineProperty(navigator, "xr", { configurable: true, value: {
+            isSessionSupported: function () { return Promise.resolve(false); },
+            requestSession: function () { return Promise.reject(new Error("WebXR not available")); },
+            addEventListener: function () {}, removeEventListener: function () {},
+          } });
+        } catch (e) {}
+      }
       var buildUrl = "Build";
       var config = {
         dataUrl: buildUrl + "/Web.data.unityweb",
@@ -114,7 +125,8 @@
           }).catch(function (message) {
             var e = document.getElementById("error");
             e.style.display = "block";
-            e.textContent = "تعذر تشغيل التجربة على هذا المتصفح. افتح الرابط في متصفح Google Chrome. (" + message + ")";
+            e.textContent = "تعذر تشغيل التجربة على هذا المتصفح. افتح الرابط في متصفح Google Chrome.";
+            console.error(message);
           });
         };
         document.body.appendChild(script);
